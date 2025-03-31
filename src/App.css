@@ -1,0 +1,51 @@
+.osu-player {
+	display: flex;
+	flex-direction: column;
+	width: 736px;
+	height: 100vh;
+	margin: 0 auto;
+	/* overflow: hidden; */
+}
+
+.modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.7);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.modal-content {
+	background: #222;
+	padding: 15px;
+	border-radius: 8px;
+	text-align: center;
+	color: white;
+}
+
+.modal p {
+	margin: 0 0 10px;
+	font-size: 15px;
+	font-family: monospace;
+}
+
+.import-button {
+	padding: 8px 16px;
+	margin-top: 5px;
+	border: none;
+	border-radius: 4px;
+	font-size: 12px;
+	background: #ff66aa;
+	color: white;
+	cursor: pointer;
+	font-family: monospace;
+	transition: background 0.3s ease;
+}
+
+.import-button:hover {
+	background: #ff3388;
+}
