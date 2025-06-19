@@ -1,15 +1,20 @@
-import { React, useState, useEffect } from "react";
-import { IoPlaySharp, IoPauseSharp, IoPlaySkipBack, IoPlaySkipForward, IoVolumeHigh, IoVolumeMute } from "react-icons/io5";
+import { useState, useEffect } from "react";
+import { IoPlaySharp, IoPauseSharp, IoPlaySkipBack, IoPlaySkipForward, IoVolumeHigh, IoVolumeMute, IoShuffle } from "react-icons/io5";
+import { getShuffleState, saveShuffleState, getVolumeValue, saveVolumeValue } from "../utils/indexeddb.js";
 import missing from "../assets/missing.png"
 import "../css/Player.css";
 
 function Player({ currentSong, setCurrentSong, audioRef, songs }) {
     const [progress, setProgress] = useState(0);
+    const [shuffle, setShuffle] = useState(false);
     const [volume, setVolume] = useState(100);
+    const [settingsLoaded, setSettingsLoaded] = useState(false);
     const [prevVolume, setPrevVolume] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [duration, setDuration] = useState(0);
     const [elapsedTime, setElapsedTime] = useState(0);
+
+    const shuffleRef = useRef(shuffle);
 
     const handleVolumeChange = (e) => {
         setVolume(Number(e.target.value));
@@ -22,6 +27,10 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
             setPrevVolume(volume);
             setVolume(0);
         }
+    };
+
+    const toggleShuffle = () => {
+        setShuffle(prev => !prev);
     };
 
     const handlePlayPause = () => {
@@ -98,10 +107,17 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
 
     useEffect(() => {
         const handleSongEnd = () => {
-            const currentIndex = songs.findIndex(song => song === currentSong);
-            const nextIndex = (currentIndex + 1) % songs.length; // Loop to first song if at the end
-            const nextSong = songs[nextIndex];
-    
+            let nextSong;
+
+            if (shuffleRef.current) {
+                const otherSongs = songs.filter(song => song !== currentSong);
+                nextSong = otherSongs[Math.floor(Math.random()*otherSongs.length)];
+            } else {
+                const currentIndex = songs.findIndex(song => song === currentSong);
+                const nextIndex = (currentIndex + 1) % songs.length; // Loop to first song if at the end
+                nextSong = songs[nextIndex];
+            }
+
             setCurrentSong(nextSong);
     
             if (audioRef.current) {
@@ -120,6 +136,32 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
             }
         };
     }, [currentSong, songs, setCurrentSong]);
+
+        useEffect(() => {
+        async function fetchSettings() {
+            const shuffleState = await getShuffleState();
+            if (shuffleState !== undefined && shuffleState !== null) {
+                setShuffle(shuffleState);
+            }
+
+            const volumeValue = await getVolumeValue();
+            if (volumeValue !== undefined && volumeValue !== null) {
+                setVolume(volumeValue);
+            }
+            setSettingsLoaded(true);
+        };
+        fetchSettings();
+    }, []);
+
+    // being used for shuffleRef update and saving shuffle and volume states
+    useEffect(() => {
+        if (settingsLoaded) {
+            saveShuffleState(shuffle);
+            saveVolumeValue(volume);
+            
+            shuffleRef.current = shuffle;
+        }
+    }, [shuffle, volume, settingsLoaded]);
 
     useEffect(() => {
         if (audioRef.current) {
@@ -154,6 +196,7 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
         <div className="player">
             <div className="player-top">
                 <div className="player-info">
+                    <IoShuffle className={`shuffle-button ${shuffle === true ? "toggled": ""}`} size={21} onClick={toggleShuffle}></IoShuffle>
                     {volume === 0 ? <IoVolumeMute className="volume-button" size={20} onClick={toggleMute}/> : <IoVolumeHigh className="volume-button" size={20} onClick={toggleMute}/>}
                     <input type="range" className="volume-slider" min="0" max="100" value={volume} onChange={handleVolumeChange} style={{ "--volume": `${volume}%` }} />
                 </div>

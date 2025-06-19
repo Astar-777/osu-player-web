@@ -30,7 +30,6 @@ export async function deleteDB() {
     };
 };
 
-
 export async function saveSongs(songs) {
     const db = await getDB();
     const transaction = db.transaction(STORE_NAME, "readwrite");
@@ -75,4 +74,32 @@ export async function getSavedFolderHandle() {
     const tx = db.transaction("settings", "readonly");
     const store = tx.objectStore("settings");
     return store.get("folderHandle");
+}
+
+export async function saveShuffleState(shuffleState) {
+    const db = await getDB();
+    const tx = db.transaction("settings", "readwrite");
+    const store = tx.objectStore("settings");
+    await store.put(shuffleState, "shuffleState");
+}
+
+export async function getShuffleState() {
+    const db = await getDB();
+    const tx = db.transaction("settings", "readonly");
+    const store = tx.objectStore("settings");
+    return store.get("shuffleState")
+}
+
+export async function saveVolumeValue(volumeValue) {
+    const db = await getDB();
+    const tx = db.transaction("settings", "readwrite");
+    const store = tx.objectStore("settings");
+    await store.put(volumeValue, "volumeValue");
+}
+
+export async function getVolumeValue() {
+    const db = await getDB();
+    const tx = db.transaction("settings", "readonly");
+    const store = tx.objectStore("settings");
+    return store.get("volumeValue")
 }
