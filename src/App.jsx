@@ -83,12 +83,12 @@ function App() {
 				if (folderHandle.kind !== 'directory') continue;
 
 				const folderName = folderHandle.name
-				const match = folderName.match(/^\d+\s(.+?)\s-\s(.+)$/);
+				const match = folderName.match(/^(\d+\s)?(.+?)\s*-\s*(.+)$/);
 				if (!match) {
-					console.log("skipping", folderName)
+					// console.log("skipping", folderName)
 					continue;
 				}
-				const [, artist, title] = match;
+				const [, maybeNumber, artist, title] = match;
 
 				let coverPath = null;
 				let possibleCovers = [];
