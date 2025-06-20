@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { FixedSizeList as List } from 'react-window';
 import "../css/SongsList.css";
 // import missing from "../assets/missing.png";

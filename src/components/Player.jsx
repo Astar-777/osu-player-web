@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { IoPlaySharp, IoPauseSharp, IoPlaySkipBack, IoPlaySkipForward, IoVolumeHigh, IoVolumeMute, IoShuffle } from "react-icons/io5";
-import { getShuffleState, saveShuffleState, getVolumeValue, saveVolumeValue } from "../utils/indexeddb.js";
+import { formatTime, loadPlayerSettings, persistPlayerSettings, skipLogic } from "../helpers/playerHelper.js"
 import missing from "../assets/missing.png"
 import "../css/Player.css";
 
@@ -16,9 +16,7 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
 
     const shuffleRef = useRef(shuffle);
 
-    const handleVolumeChange = (e) => {
-        setVolume(Number(e.target.value));
-    };
+    const handleVolumeChange = (e) => setVolume(Number(e.target.value));
 
     const toggleMute = () => {
         if (volume === 0) {
@@ -29,9 +27,7 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
         }
     };
 
-    const toggleShuffle = () => {
-        setShuffle(prev => !prev);
-    };
+    const toggleShuffle = () => setShuffle(prev => !prev);
 
     const handlePlayPause = () => {
         if (audioRef.current.paused) {
@@ -42,27 +38,13 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
     };
 
     const handleSkip = (direction) => {
-        if (!currentSong || !audioRef.current) return;
-    
-        const currentIndex = songs.findIndex(song => song === currentSong);
-        let newIndex;
-        if (direction === "prev") {
-            if (audioRef.current.currentTime > 3) {
-                // Restart song if more than 3 seconds have passed
-                audioRef.current.currentTime = 0;
-                return;
-            }
-            newIndex = currentIndex - 1;
-        } else {
-            newIndex = currentIndex + 1;
-        }
+        const index = skipLogic({ shuffleRef, direction, currentSong, audioRef, songs })
+        if (index === undefined) return;
 
-        if (newIndex >= songs.length) newIndex = 0; // Loop to first song
-        if (newIndex < 0) newIndex = songs.length - 1; // Loop to last song
-    
-        setCurrentSong(songs[newIndex]);
+        const nextSong = songs[index];
+        setCurrentSong(nextSong)
 
-        audioRef.current.src = songs[newIndex].audio;
+        audioRef.current.src = nextSong.audio;
         audioRef.current.play();
     };
 
@@ -71,13 +53,6 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
         setProgress(e.target.value);
         audioRef.current.currentTime = newTime;
         audioRef.current.play();
-    };
-
-    const formatTime = (time) => {
-        if (isNaN(time)) return "00:00";
-        const minutes = Math.floor(time / 60);
-        const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds.toString().padStart(2, "0")}`;
     };
 
     useEffect(() => {
@@ -137,27 +112,17 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
         };
     }, [currentSong, songs, setCurrentSong]);
 
-        useEffect(() => {
-        async function fetchSettings() {
-            const shuffleState = await getShuffleState();
-            if (shuffleState !== undefined && shuffleState !== null) {
-                setShuffle(shuffleState);
-            }
-
-            const volumeValue = await getVolumeValue();
-            if (volumeValue !== undefined && volumeValue !== null) {
-                setVolume(volumeValue);
-            }
+    useEffect(() => {
+        (async () =>{
+            await loadPlayerSettings({ setShuffle, setVolume });
             setSettingsLoaded(true);
-        };
-        fetchSettings();
+        })();
     }, []);
 
-    // being used for shuffleRef update and saving shuffle and volume states
+    // being used for shuffleRef update too
     useEffect(() => {
         if (settingsLoaded) {
-            saveShuffleState(shuffle);
-            saveVolumeValue(volume);
+            persistPlayerSettings({ shuffle, volume });
             
             shuffleRef.current = shuffle;
         }

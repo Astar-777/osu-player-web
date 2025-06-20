@@ -1,4 +1,4 @@
-import { useState, React, useRef } from "react";
+import { useState, useRef } from "react";
 import { IoMdSearch } from "react-icons/io";
 import { IoIosRefresh } from "react-icons/io";
 import { deleteDB } from "../utils/indexeddb";

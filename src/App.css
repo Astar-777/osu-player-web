@@ -17,6 +17,10 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
+
+	/* prevent all interactions during loading*/
+	z-index: 999;
+	pointer-events: all;
 }
 
 .modal-content {

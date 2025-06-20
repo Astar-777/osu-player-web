@@ -41,7 +41,7 @@ export async function saveSongs(songs) {
     return transaction.complete;
 }
 
-export async function loadCachedSongs() {
+export async function getCachedSongs() {
     try {
         const db = await getDB();
         const transaction = db.transaction(STORE_NAME, "readonly");
