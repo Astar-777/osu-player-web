@@ -27,7 +27,7 @@ function App() {
 		async function fetchCachedSongs() {
 			setLoadingSongs(true);
 
-			const cachedSongs = await loadCachedSongs();
+			const cachedSongs = await getCachedSongs();
 			const savedFolderHandle = await getSavedFolderHandle();
 
 			if (!savedFolderHandle) {
