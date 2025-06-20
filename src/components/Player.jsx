@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { IoPlaySharp, IoPauseSharp, IoPlaySkipBack, IoPlaySkipForward, IoVolumeHigh, IoVolumeMute, IoShuffle } from "react-icons/io5";
 import { formatTime, loadPlayerSettings, persistPlayerSettings, skipLogic } from "../helpers/playerHelper.js"
 import missing from "../assets/missing.png"
