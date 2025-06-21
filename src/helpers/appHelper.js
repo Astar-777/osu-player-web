@@ -1,7 +1,7 @@
 import { saveSongs } from "./dbHelper";
 
 export async function importAndResolveSongs(dirHandle) {
-	const excludePattern = /^(drum|normal|soft)-hit(clap|finish|normal|whistle|sliderslide|slidertick|sliderwhistle)$/;
+	const excludePattern = /^(drum|normal|soft)-hit(clap|finish|normal|whistle|sliderslide|slidertick|sliderwhistle)(\d*)?(\.\w+)?$/i;
 	const ignoreFiles = ['failsound.ogg', 'failsound.mp3', 'combobreak.ogg', 'combobreak.mp3'];
 	const preferredCovers = ["cover.jpg", "bg.jpg", "background.jpg", "cover.png", "bg.png", "background.png", "cover.jpeg", "bg.jpeg", "background.jpeg"];
 
