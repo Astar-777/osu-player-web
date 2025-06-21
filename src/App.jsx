@@ -74,6 +74,7 @@ function App() {
 	const handleImportClick = async () => {
 		try {
 			const dirHandle = await window.showDirectoryPicker();
+			setLostPermission(false);
 			setIsImporting(true);
 
 			await saveFolderHandle(dirHandle);
