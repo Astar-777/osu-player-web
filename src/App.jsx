@@ -75,6 +75,7 @@ function App() {
 		try {
 			const dirHandle = await window.showDirectoryPicker();
 			setLostPermission(false);
+			setShowModal(true);
 			setIsImporting(true);
 
 			await saveFolderHandle(dirHandle);
