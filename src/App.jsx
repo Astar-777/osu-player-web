@@ -8,6 +8,7 @@ import { importAndResolveSongs } from "./helpers/appHelper.js"
 
 function App() {
 	const [searchQuery, setSearchQuery] = useState("");
+	const [lostPermission, setLostPermission] = useState(false);
 	const [showModal, setShowModal] = useState(false);
 	const [isImporting, setIsImporting] = useState(false);
 	const [loadingSongs, setLoadingSongs] = useState(false);
@@ -37,7 +38,8 @@ function App() {
 				return;
 			}
 
-			const updatedSongs = await Promise.all(cachedSongs.map(async (song) => {
+			const updatedSongs = [];
+			for (const song of cachedSongs) {
 				try {
 					const folderHandle = await savedFolderHandle.getDirectoryHandle(song.audio.split("/")[0]);
 					const audioHandle = await folderHandle.getFileHandle(song.audio.split("/")[1]);
@@ -52,13 +54,16 @@ function App() {
 						coverURL = URL.createObjectURL(coverFile);
 					}
 
-					return { ...song, audio: audioURL, cover: coverURL };
+					updatedSongs.push({ ...song, audio: audioURL, cover: coverURL });
 				} catch (error) {
+					if (error.name === "SecurityError" || error.name === "NotAllowedError") {
+						setLostPermission(true);
+						break;
+					}
 					console.warn("Error loading file for:", song.title, error);
-					return { ...song, audio: null, cover: null };
 				}
-			}));
-
+			};
+			
 			const sortedSongs = updatedSongs.sort((a, b) => a.title.localeCompare(b.title));
 			setSongsList(sortedSongs);
 			setLoadingSongs(false);
@@ -79,7 +84,7 @@ function App() {
 			setIsImporting(false);
 			setShowModal(false);
 		} catch (error) {
-			console.error("Folder selection canceled or failed", error);
+			// console.error("Folder selection canceled or failed", error);
 		}
 	};
 
@@ -108,6 +113,51 @@ function App() {
 					</div>
 				</div>
 			)}
+
+			{lostPermission && (
+				<div className="modal">
+					<div className="modal-content">
+						<p>
+							Songs folder access lost. Please re-select it<br /> 
+							or re-import songs to continue.
+						</p>
+						<button
+							className="import-button"
+							onClick={async () => {
+								try {
+									let selectedHandle = null;
+									let isSame = false;
+
+									const savedDirHandle = await getSavedFolderHandle();
+									
+									while (!isSame) {
+										selectedHandle = await window.showDirectoryPicker();
+
+										if (savedDirHandle && await savedDirHandle.isSameEntry(selectedHandle)) {
+											isSame = true;
+											setLostPermission(false);
+											break;
+										} else {
+											alert("You selected a different folder than the one you previously selected. Select the same folder or re-import if you wish to select a different folder.")
+										}
+									}
+
+									setLostPermission(false);
+									window.location.reload();
+								} catch (error) {
+									// console.error("User cancelled folder selection:", error);
+								}
+							}}
+						>
+							Re-select
+						</button>
+						<button className="import-button"  onClick={handleImportClick} style={{ marginLeft: "10px" }}>
+							Re-import
+						</button>
+					</div>
+				</div>
+			)}
+
 			<Navbar setSearchQuery={setSearchQuery} songs={songsList}></Navbar>
 			<SongsList searchQuery={searchQuery} songs={songsList} onSongSelect={handleSongSelect} currentSong={currentSong}></SongsList>
 			<Player currentSong={currentSong} setCurrentSong={setCurrentSong} audioRef={audioRef} songs={songsList}></Player>
