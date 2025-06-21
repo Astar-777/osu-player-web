@@ -99,23 +99,6 @@ function App() {
 					</div>
 				</div>
 			)}
-			{showModal && (
-				<div className="modal">
-					<div className="modal-content">
-						{!isImporting ? (
-							<>
-								<p>Please select your osu! songs folder.</p>
-								<button className="import-button" onClick={handleImportClick}>
-									Import
-								</button>
-							</>
-						) : (
-							<p>Importing...</p>
-						)}
-					</div>
-				</div>
-			)}
-
 			{lostPermission && (
 				<div className="modal">
 					<div className="modal-content">
@@ -159,7 +142,23 @@ function App() {
 					</div>
 				</div>
 			)}
-
+			{showModal && (
+				<div className="modal">
+					<div className="modal-content">
+						{!isImporting ? (
+							<>
+								<p>Please select your osu! songs folder.</p>
+								<button className="import-button" onClick={handleImportClick}>
+									Import
+								</button>
+							</>
+						) : (
+							<p>Importing...</p>
+						)}
+					</div>
+				</div>
+			)}
+			
 			<Navbar setSearchQuery={setSearchQuery} songs={songsList}></Navbar>
 			<SongsList searchQuery={searchQuery} songs={songsList} onSongSelect={handleSongSelect} currentSong={currentSong}></SongsList>
 			<Player currentSong={currentSong} setCurrentSong={setCurrentSong} audioRef={audioRef} songs={songsList}></Player>
