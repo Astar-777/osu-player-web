@@ -97,7 +97,7 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
     
             if (audioRef.current) {
                 audioRef.current.src = nextSong.audio;
-                audioRef.current.play().catch(err => console.log("Error in auto-next play:", err));
+                audioRef.current.play().catch(err => console.error("Error in auto-next play:", err));
             }
         };
     

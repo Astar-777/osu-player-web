@@ -75,7 +75,7 @@ export async function importAndResolveSongs(dirHandle) {
 
             return { ...song, audio: audioURL, cover: coverURL };
         } catch (error) {
-            console.warn("Error loading file for:", song.title, error);
+            console.error("Error loading file for:", song.title, error);
             return { ...song, audio: null, cover: null };
         }
     }));

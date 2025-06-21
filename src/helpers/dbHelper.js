@@ -20,13 +20,14 @@ export async function deleteDB() {
     const request = indexedDB.deleteDatabase(DB_NAME);
 
     request.onsuccess = () => {
-        console.log(`${DB_NAME} deleted successfully!`);
+        // console.log(`${DB_NAME} deleted successfully!`);
     };
     request.onerror = () => {
         console.error(`Failed to delete ${DB_NAME}.`);
     };
     request.onblocked = () => {
-        console.warn(`${DB_NAME} deletion is blocked. Close all tabs using it and try again.`);
+        alert(`${DB_NAME} deletion is blocked. Close all tabs using it and try again.`)
+        // console.warn(`${DB_NAME} deletion is blocked. Close all tabs using it and try again.`);
     };
 };
 
@@ -35,9 +36,7 @@ export async function saveSongs(songs) {
     const transaction = db.transaction(STORE_NAME, "readwrite");
     const store = transaction.objectStore(STORE_NAME);
     await store.clear();
-    console.log("Cleared previous songs");
     songs.forEach(song => store.put(song));
-    console.log("Saved songs")
     return transaction.complete;
 }
 
