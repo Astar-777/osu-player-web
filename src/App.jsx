@@ -18,10 +18,6 @@ function App() {
 
 	const handleSongSelect = (song) => {
 		setCurrentSong(song);
-		if (audioRef.current) {
-			audioRef.current.src = song.audio;
-			audioRef.current.play();
-		}
 	};
 
 	useEffect(() => {

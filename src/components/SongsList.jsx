@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { FixedSizeList as List } from 'react-window';
 import "../css/SongsList.css";
-// import missing from "../assets/missing.png";
-import missing from "../../public/osu!player logo.png"
+import missing from "../assets/osu-player-logo.png"
 
 function SongsList({ searchQuery, songs, onSongSelect, currentSong }) {
     const [windowHeight, setWindowHeight] = useState(window.innerHeight);

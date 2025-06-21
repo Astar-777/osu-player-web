@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { IoPlaySharp, IoPauseSharp, IoPlaySkipBack, IoPlaySkipForward, IoVolumeHigh, IoVolumeMute, IoShuffle } from "react-icons/io5";
 import { formatTime, loadPlayerSettings, persistPlayerSettings, skipLogic } from "../helpers/playerHelper.js"
-import missing from "../assets/missing.png"
+import { getCurrentSongIndex, saveCurrentSongIndex } from "../helpers/dbHelper.js";
+import missing from "../assets/osu-player-logo.png"
 import "../css/Player.css";
 
 function Player({ currentSong, setCurrentSong, audioRef, songs }) {
@@ -43,9 +44,6 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
 
         const nextSong = songs[index];
         setCurrentSong(nextSong)
-
-        audioRef.current.src = nextSong.audio;
-        audioRef.current.play();
     };
 
     const handleSeek = (e) => {
@@ -94,11 +92,6 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
             }
 
             setCurrentSong(nextSong);
-    
-            if (audioRef.current) {
-                audioRef.current.src = nextSong.audio;
-                audioRef.current.play().catch(err => console.error("Error in auto-next play:", err));
-            }
         };
     
         if (audioRef.current) {
@@ -110,7 +103,7 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
                 audioRef.current.removeEventListener("ended", handleSongEnd);
             }
         };
-    }, [currentSong, songs, setCurrentSong]);
+    }, [currentSong, songs]);
 
     useEffect(() => {
         (async () =>{
@@ -129,6 +122,43 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
     }, [shuffle, volume, settingsLoaded]);
 
     useEffect(() => {
+        (async () => {
+            const index = await getCurrentSongIndex();
+            if (typeof index === "number" && songs[index]) {
+                setCurrentSong(songs[index]);
+            }
+        })();
+    }, [songs]);
+    
+    useEffect(() => {
+        const index = songs.findIndex(song => song === currentSong);
+        if (index !== -1) {
+            saveCurrentSongIndex(index);
+        }        
+    }, [currentSong]);
+
+    // handle song playing (on songskip, songend and songselect)
+    useEffect(() => {
+        const audio = audioRef.current
+        if (!currentSong || !audio) return;
+
+        audio.pause();
+        audio.src = currentSong.audio;
+
+        // wait for metadata (fix for song not playing when repeated skipping)
+        const onReady = () => {
+            audio.removeEventListener("loadedmetadata", onReady);
+            audio.play().catch(error => {
+                if (error.name !== "AbortError") {
+                    // console.error("Autoplay failed:", err);
+                }
+            });
+        };
+
+        audio.addEventListener("loadedmetadata", onReady);
+    }, [currentSong]);
+
+    useEffect(() => {
         if (audioRef.current) {
             audioRef.current.volume = volume / 100;
         }
@@ -139,11 +169,15 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: currentSong?.title || "Unknown",
                 artist: currentSong?.artist || "Unknown",
-                artwork: [{ src: currentSong?.cover || missing, sizes: "512x512", type: "image/png" }]
+                artwork: [{ 
+                    src: currentSong?.cover || missing,
+                    sizes: "512x512", 
+                    type: "image/png" 
+                }]
             });
     
             navigator.mediaSession.setActionHandler("play", () => {
-                audioRef.current.play();
+                audioRef.current.play().catch(() => {});
                 setIsPlaying(true);
             });
     
@@ -179,7 +213,7 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
                 </div>
 
                 <div className="song-duration">
-                    <input type="range" className="progress-bar" min="0" max="100" value={isNaN(progress) ? 0 : progress} onChange={handleSeek} style={{ "--progress": `${progress}%` }} />
+                    <input type="range" className="progress-bar" min="0" max="100" value={isNaN(progress) ? 0 : progress} onChange={handleSeek} style={{ "--progress": `${isNaN(progress) ? 0 : progress}%` }} />
                     <span className="time">{formatTime(elapsedTime)} / {formatTime(duration)}</span>
                 </div>
             </div>

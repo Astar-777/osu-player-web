@@ -102,3 +102,17 @@ export async function getVolumeValue() {
     const store = tx.objectStore("settings");
     return store.get("volumeValue")
 }
+
+export async function saveCurrentSongIndex(currentSongIndex) {
+    const db = await getDB();
+    const tx = db.transaction("settings", "readwrite");
+    const store = tx.objectStore("settings");
+    await store.put(currentSongIndex, "currentSongIndex");
+}
+
+export async function getCurrentSongIndex() {
+    const db = await getDB();
+    const tx = db.transaction("settings", "readonly");
+    const store = tx.objectStore("settings");
+    return store.get("currentSongIndex")
+}
