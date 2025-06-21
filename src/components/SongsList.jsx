@@ -47,20 +47,19 @@ function SongsList({ searchQuery, songs, onSongSelect, currentSong }) {
                 {index < filteredSongs.length - 1 && (
                     <div
                         style={{
-                            height: "4px",
-                            backgroundColor: 'transparent', 
+                            height: "10px",
+                            display: "flex",
+                            alignItems: "center", 
                         }}
-                    ></div>
-                )}
-
-                {index < filteredSongs.length - 1 && (
-                    <div
-                        style={{
-                            height: '1px',
-                            backgroundColor: 'rgba(128, 128, 128, 0.25)', 
-                            margin: '0px 0px 10px 0px'
-                        }}
-                    ></div>
+                    >
+                        <div
+                            style={{
+                                height: '1px',
+                                width: '100%',
+                                backgroundColor: 'rgba(128, 128, 128, 0.25)', 
+                            }}
+                        />
+                    </div>
                 )}
             </div>
         );
