@@ -53,8 +53,6 @@ export const resolveNextSong = ({
         if (playHistoryPointer > 0) {
             newPointer = playHistoryPointer - 1;
             nextIndex = newHistory[newPointer];
-            console.log("prev", newHistory)
-            console.log("prev", newPointer)
             return { nextIndex, newHistory, newPointer };
         } else {
             // return; // No song to go back to
@@ -68,8 +66,6 @@ export const resolveNextSong = ({
             // Go forward in history
             newPointer = playHistoryPointer + 1;
             nextIndex = newHistory[newPointer];
-            console.log("next in history", newHistory)
-            console.log("next in history", newPointer)
             return { nextIndex, newHistory, newPointer };
         } else {
             if (shuffleRef.current) {
@@ -83,8 +79,6 @@ export const resolveNextSong = ({
             
             newHistory.push(nextIndex);
             newPointer = newHistory.length - 1;
-            console.log("next new", newHistory)
-            console.log("next new", newPointer)
             return { nextIndex, newHistory, newPointer };
         }
     }
