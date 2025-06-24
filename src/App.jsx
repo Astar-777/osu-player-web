@@ -14,6 +14,8 @@ function App() {
 	const [loadingSongs, setLoadingSongs] = useState(false);
 	const [songsList, setSongsList] = useState([]);
 	const [currentSong, setCurrentSong] = useState(null);
+	const [playHistory, setPlayHistory] = useState([]);
+	const [playHistoryPointer, setPlayHistoryPointer] = useState(-1);
 	const audioRef = useRef(null);
 
 	const handleSongSelect = (song) => {
@@ -157,7 +159,7 @@ function App() {
 			
 			<Navbar setSearchQuery={setSearchQuery} songs={songsList}></Navbar>
 			<SongsList searchQuery={searchQuery} songs={songsList} onSongSelect={handleSongSelect} currentSong={currentSong}></SongsList>
-			<Player currentSong={currentSong} setCurrentSong={setCurrentSong} audioRef={audioRef} songs={songsList}></Player>
+			<Player currentSong={currentSong} setCurrentSong={setCurrentSong} audioRef={audioRef} songs={songsList} playHistory={playHistory} setPlayHistory={setPlayHistory} playHistoryPointer={playHistoryPointer} setPlayHistoryPointer={setPlayHistoryPointer}></Player>
 			<audio ref={audioRef}></audio>
 		</div>
 	);

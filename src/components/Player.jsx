@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { IoPlaySharp, IoPauseSharp, IoPlaySkipBack, IoPlaySkipForward, IoVolumeHigh, IoVolumeMute, IoShuffle } from "react-icons/io5";
-import { formatTime, loadPlayerSettings, persistPlayerSettings, skipLogic } from "../helpers/playerHelper.js"
+import { formatTime, loadPlayerSettings, persistPlayerSettings, resolveNextSong } from "../helpers/playerHelper.js"
 import { getCurrentSongIndex, saveCurrentSongIndex } from "../helpers/dbHelper.js";
 import missing from "../assets/osu-player-logo.png"
 import "../css/Player.css";
 
-function Player({ currentSong, setCurrentSong, audioRef, songs }) {
+function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, setPlayHistory, playHistoryPointer, setPlayHistoryPointer }) {
     const [progress, setProgress] = useState(0);
     const [shuffle, setShuffle] = useState(false);
     const [volume, setVolume] = useState(100);
@@ -39,11 +39,21 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
     };
 
     const handleSkip = (direction) => {
-        const index = skipLogic({ shuffleRef, direction, currentSong, audioRef, songs })
-        if (index === undefined) return;
+        const result = resolveNextSong({
+            shuffleRef,
+            direction,
+            currentSong,
+            audioRef,
+            songs,
+            playHistory,
+            playHistoryPointer,
+        });
 
-        const nextSong = songs[index];
-        setCurrentSong(nextSong)
+        if (!result || !result.nextIndex) return;
+
+        setCurrentSong(songs[result.nextIndex]);
+        setPlayHistory(result.newHistory);
+        setPlayHistoryPointer(result.newPointer);
     };
 
     const handleSeek = (e) => {
@@ -80,30 +90,33 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
 
     useEffect(() => {
         const handleSongEnd = () => {
-            let nextSong;
-
-            if (shuffleRef.current) {
-                const otherSongs = songs.filter(song => song !== currentSong);
-                nextSong = otherSongs[Math.floor(Math.random()*otherSongs.length)];
-            } else {
-                const currentIndex = songs.findIndex(song => song === currentSong);
-                const nextIndex = (currentIndex + 1) % songs.length; // Loop to first song if at the end
-                nextSong = songs[nextIndex];
-            }
-
-            setCurrentSong(nextSong);
+            const result = resolveNextSong({
+                shuffleRef,
+                direction: "next",
+                currentSong,
+                audioRef,
+                songs,
+                playHistory,
+                playHistoryPointer,
+            });
+            
+            if (!result || !result.nextIndex) return;
+            
+            setCurrentSong(songs[result.nextIndex]);
+            setPlayHistory(result.newHistory);
+            setPlayHistoryPointer(result.newPointer);
         };
-    
+
         if (audioRef.current) {
             audioRef.current.addEventListener("ended", handleSongEnd);
         }
-    
+        
         return () => {
             if (audioRef.current) {
                 audioRef.current.removeEventListener("ended", handleSongEnd);
             }
         };
-    }, [currentSong, songs]);
+    }, [currentSong]);
 
     useEffect(() => {
         (async () =>{
@@ -127,6 +140,8 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
             if (typeof index === "number" && songs[index]) {
                 setCurrentSong(songs[index]);
             }
+            setPlayHistory([index])
+            setPlayHistoryPointer(0)
         })();
     }, [songs]);
     
@@ -142,15 +157,15 @@ function Player({ currentSong, setCurrentSong, audioRef, songs }) {
         const audio = audioRef.current
         if (!currentSong || !audio) return;
 
-        audio.pause();
         audio.src = currentSong.audio;
 
         // wait for metadata (fix for song not playing when repeated skipping)
         const onReady = () => {
             audio.removeEventListener("loadedmetadata", onReady);
+
             audio.play().catch(error => {
                 if (error.name !== "AbortError") {
-                    // console.error("Autoplay failed:", err);
+                // console.error("Autoplay failed:", err);
                 }
             });
         };
