@@ -3,7 +3,7 @@ import { FixedSizeList as List } from 'react-window';
 import "../css/SongsList.css";
 import missing from "../assets/osu-player-logo.png"
 
-function SongsList({ searchQuery, songs, onSongSelect, currentSong }) {
+function SongsList({ searchQuery, songs, onSongSelect, currentSong, queue, setQueue, onAddToQueue }) {
     const [windowHeight, setWindowHeight] = useState(window.innerHeight);
 
     const filteredSongs = songs.filter(song =>
@@ -41,6 +41,17 @@ function SongsList({ searchQuery, songs, onSongSelect, currentSong }) {
                         <p className="song-title">{song.title}</p>
                         <p className="song-details">{song.artist}</p>
                     </div>
+                    <button
+                        className="song-queue-add-button"
+                        onClick={(e) => {
+                            e.stopPropagation(); // Prevent selecting song when clicking "+"
+                            onAddToQueue(song);
+                            setQueue([...queue, songs.indexOf(song)])
+                            // TODO: Add to queue logic
+                        }}
+                    >
+                        +
+                    </button>
                 </div>
 
                 {index < filteredSongs.length - 1 && (

@@ -16,10 +16,19 @@ function App() {
 	const [currentSong, setCurrentSong] = useState(null);
 	const [playHistory, setPlayHistory] = useState([]);
 	const [playHistoryPointer, setPlayHistoryPointer] = useState(-1);
+	const [queue, setQueue] = useState([]);
+	const [queueMessage, setQueueMessage] = useState(null);
+
 	const audioRef = useRef(null);
 
 	const handleSongSelect = (song) => {
+		// doesn't reset playHistory
 		setCurrentSong(song);
+	};
+
+	const showQueueMessage = (text) => {
+		setQueueMessage(text);
+		setTimeout(() => setQueueMessage(null), 3000);
 	};
 
 	useEffect(() => {
@@ -158,8 +167,13 @@ function App() {
 			)}
 			
 			<Navbar setSearchQuery={setSearchQuery} songs={songsList}></Navbar>
-			<SongsList searchQuery={searchQuery} songs={songsList} onSongSelect={handleSongSelect} currentSong={currentSong}></SongsList>
-			<Player currentSong={currentSong} setCurrentSong={setCurrentSong} audioRef={audioRef} songs={songsList} playHistory={playHistory} setPlayHistory={setPlayHistory} playHistoryPointer={playHistoryPointer} setPlayHistoryPointer={setPlayHistoryPointer}></Player>
+			<SongsList searchQuery={searchQuery} songs={songsList} onSongSelect={handleSongSelect} currentSong={currentSong} queue={queue} setQueue={setQueue} onAddToQueue={(song) => showQueueMessage(`Added to queue: ${song.title}`)}></SongsList>
+			{queueMessage && (
+				<div className="queue-toast">
+					{queueMessage}
+				</div>
+			)}
+			<Player currentSong={currentSong} setCurrentSong={setCurrentSong} audioRef={audioRef} songs={songsList} playHistory={playHistory} setPlayHistory={setPlayHistory} playHistoryPointer={playHistoryPointer} setPlayHistoryPointer={setPlayHistoryPointer} queue={queue} setQueue={setQueue}></Player>
 			<audio ref={audioRef}></audio>
 		</div>
 	);

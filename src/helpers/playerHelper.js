@@ -26,23 +26,32 @@ export const persistPlayerSettings = ({ shuffle, volume }) => {
 };
 
 export const resolveNextSong = ({
-    shuffleRef,
+    queue,
+    shuffle,
     direction,
-    currentSong,
     audioRef,
     songs,
     playHistory,
     playHistoryPointer,
 }) => {
-    if (!currentSong || !audioRef.current) return;
+    if (!audioRef.current) return;
 
+    // queued songs aren't added to playHistory
+    if (direction === "next" && queue.length > 0) {
+        const nextIndex = queue[0];
+        const newQueue = queue.slice(1);
+        return { newQueue, nextIndex };
+    };
 
     let newHistory = [...playHistory];
     let newPointer = playHistoryPointer;
     let nextIndex = null;
 
-    const currentIndex = songs.findIndex(song => song === currentSong);
-    if (currentIndex === -1) return;
+    const lastSongNotQueueIndex = playHistory[playHistory.length-1]
+    const currentIndex = lastSongNotQueueIndex ?? 0
+    const currentSong = songs[currentIndex];
+
+    if (currentIndex == -1) return;
 
     if (direction === "prev") {
         if (audioRef.current.currentTime > 3) {
@@ -55,7 +64,7 @@ export const resolveNextSong = ({
             nextIndex = newHistory[newPointer];
             return { nextIndex, newHistory, newPointer };
         } else {
-            // return; // No song to go back to
+            // No song to go back to
             audioRef.current.currentTime = 0;
             return;
         }
@@ -68,7 +77,7 @@ export const resolveNextSong = ({
             nextIndex = newHistory[newPointer];
             return { nextIndex, newHistory, newPointer };
         } else {
-            if (shuffleRef.current) {
+            if (shuffle) {
                 const otherSongs = songs.filter(song => song !== currentSong);
                 const generatedSong = otherSongs[Math.floor(Math.random() * otherSongs.length)];
                 nextIndex = songs.findIndex(song => song === generatedSong);    

@@ -71,6 +71,29 @@
     margin: 0px;
 }
 
+.song-queue-add-button {
+    position: absolute;
+    right: 22px;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    font-size: 28px;
+    padding: 0px;
+    color: #605e5e;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.song-queue-add-button:hover {
+    color: #a5a1a1;
+}
+
+.song-item:hover .song-queue-add-button {
+    display: flex;    
+}
+
 .no-songs {
     color: white;
     font-family: 'Poppins', sans-serif;

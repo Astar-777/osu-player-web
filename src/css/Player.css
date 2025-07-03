@@ -40,6 +40,11 @@
     color: rgb(0, 255, 0);
 }
 
+.queue-button {
+    color: white;
+    margin-right: 3px;
+}
+
 .volume-button {
     color: white;
 }

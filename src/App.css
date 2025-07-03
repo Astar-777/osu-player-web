@@ -52,3 +52,26 @@
 .import-button:hover {
 	background: #ff3388;
 }
+
+.queue-toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #282828;
+	font-family: 'Roboto', sans-serif;
+    color: #fff;
+    padding: 11px 17px;
+    border-radius: 10px;
+    font-size: 14px;
+    z-index: 999;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    animation: fadeinout 3s ease;
+}
+
+@keyframes fadeinout {
+    0% { opacity: 0; transform: translate(-50%, 10px); }
+    10% { opacity: 1; transform: translate(-50%, 0); }
+    90% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, 10px); }
+}

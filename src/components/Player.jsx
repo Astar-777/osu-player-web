@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { IoPlaySharp, IoPauseSharp, IoPlaySkipBack, IoPlaySkipForward, IoVolumeHigh, IoVolumeMute, IoShuffle } from "react-icons/io5";
+import { PiQueue } from "react-icons/pi";
 import { formatTime, loadPlayerSettings, persistPlayerSettings, resolveNextSong } from "../helpers/playerHelper.js"
 import { getCurrentSongIndex, saveCurrentSongIndex } from "../helpers/dbHelper.js";
 import missing from "../assets/osu-player-logo.png"
 import "../css/Player.css";
 
-function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, setPlayHistory, playHistoryPointer, setPlayHistoryPointer }) {
+function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, setPlayHistory, playHistoryPointer, setPlayHistoryPointer, queue, setQueue }) {
     const [progress, setProgress] = useState(0);
     const [shuffle, setShuffle] = useState(false);
     const [volume, setVolume] = useState(100);
@@ -15,13 +16,17 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
     const [duration, setDuration] = useState(0);
     const [elapsedTime, setElapsedTime] = useState(0);
 
+    // for latest values for handleSongsEnd
     const shuffleRef = useRef(shuffle);
+    const queueRef = useRef(queue);
+    const playHistoryRef = useRef(playHistory);
+    const playHistoryPointerRef = useRef(playHistoryPointer);
 
     const handleVolumeChange = (e) => setVolume(Number(e.target.value));
 
     const toggleMute = () => {
         if (volume === 0) {
-            setVolume(prevVolume); 
+            setVolume(prevVolume);
         } else {
             setPrevVolume(volume);
             setVolume(0);
@@ -29,6 +34,10 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
     };
 
     const toggleShuffle = () => setShuffle(prev => !prev);
+
+    // const openQueue = () => {
+
+    // };
 
     const handlePlayPause = () => {
         if (audioRef.current.paused) {
@@ -40,16 +49,24 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
 
     const handleSkip = (direction) => {
         const result = resolveNextSong({
-            shuffleRef,
+            queue,
+            shuffle,
             direction,
-            currentSong,
             audioRef,
             songs,
             playHistory,
             playHistoryPointer,
         });
 
-        if (!result || !result.nextIndex) return;
+        if (!result || result.nextIndex === undefined || result.nextIndex === null) {
+            return;
+        }
+
+        if (result.newQueue !== undefined) {
+            setCurrentSong(songs[result.nextIndex]);
+            setQueue(result.newQueue);
+            return;
+        }
 
         setCurrentSong(songs[result.nextIndex]);
         setPlayHistory(result.newHistory);
@@ -62,6 +79,14 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
         audioRef.current.currentTime = newTime;
         audioRef.current.play();
     };
+
+    // ref updates for handleSongsEnd
+    useEffect(() => {
+        shuffleRef.current = shuffle;
+        queueRef.current = queue;
+        playHistoryRef.current = playHistory;
+        playHistoryPointerRef.current = playHistoryPointer;
+    }, [shuffle, queue, playHistory, playHistoryPointer]);
 
     useEffect(() => {
         const audio = audioRef.current;
@@ -91,17 +116,25 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
     useEffect(() => {
         const handleSongEnd = () => {
             const result = resolveNextSong({
-                shuffleRef,
+                queue: queueRef.current,
+                shuffle: shuffleRef.current,
                 direction: "next",
-                currentSong,
                 audioRef,
                 songs,
-                playHistory,
-                playHistoryPointer,
+                playHistory: playHistoryRef.current,
+                playHistoryPointer: playHistoryPointerRef.current,
             });
-            
-            if (!result || !result.nextIndex) return;
-            
+
+            if (!result || result.nextIndex === undefined || result.nextIndex === null) {
+                return;
+            }
+
+            if (result.newQueue !== undefined) {
+                setCurrentSong(songs[result.nextIndex]);
+                setQueue(result.newQueue);
+                return;
+            }
+
             setCurrentSong(songs[result.nextIndex]);
             setPlayHistory(result.newHistory);
             setPlayHistoryPointer(result.newPointer);
@@ -110,7 +143,7 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
         if (audioRef.current) {
             audioRef.current.addEventListener("ended", handleSongEnd);
         }
-        
+
         return () => {
             if (audioRef.current) {
                 audioRef.current.removeEventListener("ended", handleSongEnd);
@@ -119,18 +152,15 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
     }, [currentSong]);
 
     useEffect(() => {
-        (async () =>{
+        (async () => {
             await loadPlayerSettings({ setShuffle, setVolume });
             setSettingsLoaded(true);
         })();
     }, []);
 
-    // being used for shuffleRef update too
     useEffect(() => {
         if (settingsLoaded) {
             persistPlayerSettings({ shuffle, volume });
-            
-            shuffleRef.current = shuffle;
         }
     }, [shuffle, volume, settingsLoaded]);
 
@@ -144,12 +174,12 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
             setPlayHistoryPointer(0)
         })();
     }, [songs]);
-    
+
     useEffect(() => {
         const index = songs.findIndex(song => song === currentSong);
         if (index !== -1) {
             saveCurrentSongIndex(index);
-        }        
+        }
     }, [currentSong]);
 
     // handle song playing (on songskip, songend and songselect)
@@ -165,7 +195,7 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
 
             audio.play().catch(error => {
                 if (error.name !== "AbortError") {
-                // console.error("Autoplay failed:", err);
+                    // console.error("Autoplay failed:", err);
                 }
             });
         };
@@ -184,23 +214,23 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: currentSong?.title || "Unknown",
                 artist: currentSong?.artist || "Unknown",
-                artwork: [{ 
+                artwork: [{
                     src: currentSong?.cover || missing,
-                    sizes: "512x512", 
-                    type: "image/png" 
+                    sizes: "512x512",
+                    type: "image/png"
                 }]
             });
-    
+
             navigator.mediaSession.setActionHandler("play", () => {
-                audioRef.current.play().catch(() => {});
+                audioRef.current.play().catch(() => { });
                 setIsPlaying(true);
             });
-    
+
             navigator.mediaSession.setActionHandler("pause", () => {
                 audioRef.current.pause();
                 setIsPlaying(false);
             });
-    
+
             navigator.mediaSession.setActionHandler("previoustrack", () => handleSkip("prev"));
             navigator.mediaSession.setActionHandler("nexttrack", () => handleSkip("next"));
         }
@@ -210,8 +240,9 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
         <div className="player">
             <div className="player-top">
                 <div className="player-info">
-                    <IoShuffle className={`shuffle-button ${shuffle === true ? "toggled": ""}`} size={21} onClick={toggleShuffle}></IoShuffle>
-                    {volume === 0 ? <IoVolumeMute className="volume-button" size={20} onClick={toggleMute}/> : <IoVolumeHigh className="volume-button" size={20} onClick={toggleMute}/>}
+                    <PiQueue className="queue-button" size={21}></PiQueue>
+                    <IoShuffle className={`shuffle-button ${shuffle === true ? "toggled" : ""}`} size={21} onClick={toggleShuffle}></IoShuffle>
+                    {volume === 0 ? <IoVolumeMute className="volume-button" size={20} onClick={toggleMute} /> : <IoVolumeHigh className="volume-button" size={20} onClick={toggleMute} />}
                     <input type="range" className="volume-slider" min="0" max="100" value={volume} onChange={handleVolumeChange} style={{ "--volume": `${volume}%` }} />
                 </div>
 
