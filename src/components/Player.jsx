@@ -16,7 +16,7 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
     const [duration, setDuration] = useState(0);
     const [elapsedTime, setElapsedTime] = useState(0);
 
-    // for latest values for handleSongsEnd
+    // for latest values for handleSkip (because of mediasession events) and handleSongsEnd
     const shuffleRef = useRef(shuffle);
     const queueRef = useRef(queue);
     const playHistoryRef = useRef(playHistory);
@@ -49,13 +49,13 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
 
     const handleSkip = (direction) => {
         const result = resolveNextSong({
-            queue,
-            shuffle,
+            queue: queueRef.current,
+            shuffle: shuffleRef.current,
             direction,
             audioRef,
             songs,
-            playHistory,
-            playHistoryPointer,
+            playHistory: playHistoryRef.current,
+            playHistoryPointer: playHistoryPointerRef.current,
         });
 
         if (!result || result.nextIndex === undefined || result.nextIndex === null) {
@@ -80,7 +80,7 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
         audioRef.current.play();
     };
 
-    // ref updates for handleSongsEnd
+    // ref updates for handleSkip and handleSongsEnd
     useEffect(() => {
         shuffleRef.current = shuffle;
         queueRef.current = queue;
@@ -194,7 +194,7 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
             audio.removeEventListener("loadedmetadata", onReady);
 
             audio.play().catch(error => {
-                if (error.name !== "AbortError") {
+                if (error.name !== "AbortError") { 
                     // console.error("Autoplay failed:", err);
                 }
             });
