@@ -47,7 +47,6 @@ function SongsList({ searchQuery, songs, onSongSelect, currentSong, queue, setQu
                             e.stopPropagation(); // Prevent selecting song when clicking "+"
                             onAddToQueue(song);
                             setQueue([...queue, songs.indexOf(song)])
-                            // TODO: Add to queue logic
                         }}
                     >
                         +

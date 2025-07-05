@@ -22,6 +22,7 @@
 
 
 .song-item {
+    position: relative;
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -81,8 +82,6 @@
     padding: 0px;
     color: #605e5e;
     display: none;
-    align-items: center;
-    justify-content: center;
     cursor: pointer;
 }
 

@@ -6,7 +6,7 @@ import { getCurrentSongIndex, saveCurrentSongIndex } from "../helpers/dbHelper.j
 import missing from "../assets/osu-player-logo.png"
 import "../css/Player.css";
 
-function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, setPlayHistory, playHistoryPointer, setPlayHistoryPointer, queue, setQueue }) {
+function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, setPlayHistory, playHistoryPointer, setPlayHistoryPointer, queue, setQueue, showQueueTab, setShowQueueTab }) {
     const [progress, setProgress] = useState(0);
     const [shuffle, setShuffle] = useState(false);
     const [volume, setVolume] = useState(100);
@@ -35,9 +35,7 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
 
     const toggleShuffle = () => setShuffle(prev => !prev);
 
-    // const openQueue = () => {
-
-    // };
+    const toggleQueue = () => setShowQueueTab(prev => !prev);
 
     const handlePlayPause = () => {
         if (audioRef.current.paused) {
@@ -240,7 +238,7 @@ function Player({ currentSong, setCurrentSong, audioRef, songs, playHistory, set
         <div className="player">
             <div className="player-top">
                 <div className="player-info">
-                    <PiQueue className="queue-button" size={21}></PiQueue>
+                    <PiQueue className={`queue-button ${showQueueTab === true ? "toggled" : ""}`} size={21} onClick={toggleQueue}></PiQueue>
                     <IoShuffle className={`shuffle-button ${shuffle === true ? "toggled" : ""}`} size={21} onClick={toggleShuffle}></IoShuffle>
                     {volume === 0 ? <IoVolumeMute className="volume-button" size={20} onClick={toggleMute} /> : <IoVolumeHigh className="volume-button" size={20} onClick={toggleMute} />}
                     <input type="range" className="volume-slider" min="0" max="100" value={volume} onChange={handleVolumeChange} style={{ "--volume": `${volume}%` }} />

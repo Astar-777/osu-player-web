@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import './App.css'
 import Navbar from "./components/Navbar";
 import SongsList from "./components/SongsList";
-import Player from "./components/Player"
+import Player from "./components/Player";
+import QueueTab from "./components/QueueTab.jsx";
 import { getSavedFolderHandle, saveFolderHandle, getCachedSongs } from "./helpers/dbHelper.js"
 import { importAndResolveSongs } from "./helpers/appHelper.js"
 
@@ -17,6 +18,7 @@ function App() {
 	const [playHistory, setPlayHistory] = useState([]);
 	const [playHistoryPointer, setPlayHistoryPointer] = useState(-1);
 	const [queue, setQueue] = useState([]);
+	const [showQueueTab, setShowQueueTab] = useState(false);
 	const [queueMessage, setQueueMessage] = useState(null);
 
 	const audioRef = useRef(null);
@@ -165,6 +167,9 @@ function App() {
 					</div>
 				</div>
 			)}
+			{showQueueTab && (
+				<QueueTab songs={songsList} queue={queue} setQueue={setQueue} onClose={() => setShowQueueTab(false)}/>
+			)}
 			
 			<Navbar setSearchQuery={setSearchQuery} songs={songsList}></Navbar>
 			<SongsList searchQuery={searchQuery} songs={songsList} onSongSelect={handleSongSelect} currentSong={currentSong} queue={queue} setQueue={setQueue} onAddToQueue={(song) => showQueueMessage(`Added to queue: ${song.title}`)}></SongsList>
@@ -173,7 +178,7 @@ function App() {
 					{queueMessage}
 				</div>
 			)}
-			<Player currentSong={currentSong} setCurrentSong={setCurrentSong} audioRef={audioRef} songs={songsList} playHistory={playHistory} setPlayHistory={setPlayHistory} playHistoryPointer={playHistoryPointer} setPlayHistoryPointer={setPlayHistoryPointer} queue={queue} setQueue={setQueue}></Player>
+			<Player currentSong={currentSong} setCurrentSong={setCurrentSong} audioRef={audioRef} songs={songsList} playHistory={playHistory} setPlayHistory={setPlayHistory} playHistoryPointer={playHistoryPointer} setPlayHistoryPointer={setPlayHistoryPointer} queue={queue} setQueue={setQueue} showQueueTab={showQueueTab} setShowQueueTab={setShowQueueTab}></Player>
 			<audio ref={audioRef}></audio>
 		</div>
 	);

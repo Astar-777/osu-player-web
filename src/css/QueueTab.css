@@ -1,0 +1,155 @@
+.queue-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    background: rgba(0, 0, 0, 0.65);
+    /* backdrop-filter: blur(1px); */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    pointer-events: all;
+}
+
+.queue-modal {
+    background-color: #222;
+    height: 75vh;
+    width: 600px;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.queue-header {
+    display: flex;
+    position: relative;
+    height: 28px;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Roboto', sans-serif;
+    color: white;
+    background-color: #222;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+}
+
+.queue-header h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.queue-clear-button {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    font-size: 23px;
+    margin-right: auto;
+    margin-left: 8px;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.queue-clear-button:hover {
+    color: #ff6f6f;
+}
+
+.queue-clear-button .tooltip {
+    position: absolute;
+    bottom: 27%;
+    left: 24%;
+    transform: translateX(-50%);
+    background-color: #363434;
+    color: #fff;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1001;
+}
+
+.queue-clear-button:hover .tooltip {
+    opacity: 0.6;
+}
+
+.queue-close-button {
+    line-height: 1;
+    background: none;
+    border: none;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #605e5e;
+}
+
+.queue-close-button:hover {
+    color: #a5a1a1;
+}
+
+.queue-scroll-container {
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.no-queued-songs {
+    color: white;
+    padding-left: 20px;
+    font-family: 'Poppins', sans-serif;
+}
+
+
+.song-queue-remove-button {
+    position: absolute;;
+    right: 22px;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    font-size: 28px;
+    padding: 0px;
+    color: #605e5e;
+    display: none;
+    cursor: pointer;
+}
+
+.queue-hover:hover {
+    background-color: rgba(58, 54, 54, 0.96);
+}
+
+.song-queue-remove-button:hover {
+    color: #a5a1a1
+}
+
+.song-item:hover .song-queue-remove-button {
+    display: flex;
+}
+
+.drag-handle-button {
+    position: absolute;
+    right: 48px;
+    top: 47%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #605e5e;
+    /* display: none; */
+    visibility: hidden;
+    cursor: grab;
+    padding: 0;
+}
+
+.song-item:hover .drag-handle-button {
+    visibility: visible;
+}
+
+.drag-handle-button:hover {
+    color: #a5a1a1
+}

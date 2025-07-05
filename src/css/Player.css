@@ -33,20 +33,26 @@
 .shuffle-button {
     color: white;
     margin-right: 3px;
+    cursor: pointer;
 }
 
 .shuffle-button.toggled {
-    /* color: rgba(100, 255, 100, 0.95) */
     color: rgb(0, 255, 0);
 }
 
 .queue-button {
     color: white;
     margin-right: 3px;
+    cursor: pointer;
+}
+
+.queue-button.toggled {
+    color: rgb(0, 255, 0);
 }
 
 .volume-button {
     color: white;
+    cursor: pointer;
 }
 
 .volume-slider {
